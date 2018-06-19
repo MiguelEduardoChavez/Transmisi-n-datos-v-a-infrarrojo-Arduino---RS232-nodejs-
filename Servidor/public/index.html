@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Practica 2</title>
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/chart.min.js"></script>
+    <script src="js/socket.io.js"></script>
+   
+</head>
+<body>
+    <h1>Practica 3</h1>
+    <div id="cabeceras"></div>
+    <div style="width: 800px; height: 400px;">
+            <canvas id="pir"></canvas>
+        </div>
+    <div style="width: 800px; height: 400px;">
+        <canvas id="temperatura"></canvas>
+    </div>
+    <div style="width: 800px; height: 400px;">
+        <canvas id="humedad"></canvas>
+    </div>
+    <div style="width: 800px; height: 400px;">
+        <canvas id="gas"></canvas>
+    </div>
+
+
+<script>
+    var pir=0;
+    var npir=0;
+    var Temperatura=0;
+    var humedad=0;
+    var gas=0;
+    var mq2=0;
+var socket = io.connect('http://localhost:8080', {'forceNew': true});
+    var bandera = false;
+    socket.on('datos', function(data){//cuando recibe
+        console.log(data);
+        render(data);
+        var fecha= new Date();
+        var ff=fecha.getHours()+":"+fecha.getMinutes()+":"+fecha.getSeconds();
+        addData(chart,ff,Temperatura);
+        addData(chart1,ff,humedad);
+        addData(chart2,ff,mq2);
+        addData(chart3,ff,pir);
+        
+    });
+
+   window.setInterval(
+    function(){
+        var fecha= new Date();
+        var ff=fecha.getHours()+":"+fecha.getMinutes()+":"+fecha.getSeconds();
+        addData(chart,ff,Temperatura);
+        addData(chart1,ff,humedad);
+        addData(chart2,ff,mq2);
+        addData(chart3,ff,pir)
+       // console.log("temperatura : "+Temperatura);
+    
+  } ,2000);
+
+
+    socket.on('pir', function(data){//cuando recibe
+        console.log(data);
+        pir=data[0];
+        var fecha= new Date();
+        var ff=fecha.getHours()+":"+fecha.getMinutes()+":"+fecha.getSeconds();
+        addData(chart3,ff,pir);
+        //bandera =  true;
+       });
+
+    
+       socket.on('mq2', function(data){//cuando recibe
+         mq2=data[0];
+        console.log("gas"+mq2);
+        gas =  data;
+        var fecha= new Date();
+        var ff=fecha.getHours()+":"+fecha.getMinutes()+":"+fecha.getSeconds();
+        addData(chart2,ff,mq2);
+       });
+    
+        socket.on('temperatura', function(data){//cuando recibe
+        
+        Temperatura = data[0];
+        console.log(data);
+        var fecha= new Date();
+        var ff=fecha.getHours()+":"+fecha.getMinutes()+":"+fecha.getSeconds();
+        addData(chart,ff,Temperatura);
+       });
+       socket.on('humedad', function(data){//cuando recibe
+        console.log(data);
+        humedad = data[0];
+        var fecha= new Date();
+        var ff=fecha.getHours()+":"+fecha.getMinutes()+":"+fecha.getSeconds();
+        addData(chart1,ff,humedad);
+        //render();
+       });
+
+
+
+
+
+
+
+function render(data){
+    var html = `<div>
+                    <strong>Temperatura: ${data.temperatura}</strong><br>
+                    <strong>Humedad: ${data.humedad}</strong><br>
+                    <strong>GAS: ${data.mq2}</strong><br>
+                    <strong>Pir: ${data.pir}</strong>
+                </div>`;
+            
+//escribirlo en el 
+document.getElementById('cabeceras').innerHTML = html;
+            }
+var ctx = document.getElementById('temperatura').getContext('2d');
+var ctx1 = document.getElementById('humedad').getContext('2d');
+var ctx2 = document.getElementById('gas').getContext('2d');
+var ctx3 = document.getElementById('pir').getContext('2d');
+
+var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Temperatura",
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [],
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+});
+var chart1 = new Chart(ctx1, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Humedad",
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [],
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+});
+var chart2 = new Chart(ctx2, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: [],
+        datasets: [{
+            label: "GAS",
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [],
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+});
+var chart3 = new Chart(ctx3, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: [],
+        datasets: [{
+            label: "PIR",
+            backgroundColor: 'rgb(255, 99, 13)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [],
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+});
+
+function addData(chart, label, data) {
+    var dd = [2,2,2];
+    if(chart.data.labels.length>10){
+        chart.data.labels.shift();
+        chart.data.datasets.forEach((dataset) => {
+        dataset.data.shift();
+    });
+    }
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(data);
+    });
+    chart.update();
+}
+
+
+
+</script>
+</body>
+</html>

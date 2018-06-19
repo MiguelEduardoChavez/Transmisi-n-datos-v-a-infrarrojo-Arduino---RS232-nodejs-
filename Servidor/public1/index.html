@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Practica 3</title>
+    <script src="socket.io.js"></script>
+</head>
+<body>
+    <h1 style="text-align: center">Practica 3</h1>
+    <div id="datos" style="background:#DAF7A6; text-align: center"></div>
+    
+
+
+    <script>
+        var humedad = 0;
+        var temperatura = 0;
+        var gas = 0;
+        var pir = "no detectando presencia";
+        
+        function render(){
+            var html= `<strong>PIR: ${pir}</strong><br>
+                       <strong>Temperatura: ${temperatura} °C</strong><br>
+                       <strong>Humedad: ${humedad} %</strong><br>
+                       <strong>MQ2: ${gas}</strong>`;
+                       document.getElementById('datos').innerHTML = html;
+
+        }
+
+        var socket = io.connect('http://localhost:8080', {'forceNew': true});
+         socket.on('pir', function(data){//cuando recibe
+         console.log(data);
+         pir = data;
+         render();
+        });
+        socket.on('npir', function(data){//cuando recibe
+         console.log(data);
+         pir = data;
+         render();
+        });
+
+        socket.on('mq2', function(data){//cuando recibe
+         console.log(data);
+         gas =  data;
+         render();
+        });
+
+         socket.on('temperatura', function(data){//cuando recibe
+         console.log(data);
+         temperatura = data;
+         render();
+        });
+        socket.on('humedad', function(data){//cuando recibe
+         console.log(data);
+         humedad = data;
+         render();
+        });
+    </script>
+    
+</body>
+
+
+</html>
